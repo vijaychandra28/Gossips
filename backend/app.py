@@ -41,8 +41,8 @@ def create_app():
     CORS(app, supports_credentials=True, origins=[
         "http://localhost:5173", "http://127.0.0.1:5173",
         "http://localhost:5174", "http://127.0.0.1:5174",
-        "http://localhost:5175", "http://127.0.0.1:5175"
-        "https://gossips-bn3l.onrender.com"
+        "http://localhost:5175", "http://127.0.0.1:5175",
+        "https://gossipshub.vercel.app","https://gossipshub.vercel.app"
     ])
 
     # Ensure upload directory exists
