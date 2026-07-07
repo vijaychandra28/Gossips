@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-bgDeep: #0B0F19;
+  --color-bgPanel: #121826;
+  --color-bgLight: #1B2233;
+  --color-accent: #4F8CFF;
+  --color-accent-hover: #6EA8FE;
+  --color-accent-light: #8CB9FF;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  
+  --font-sans: 'Outfit', 'Inter', sans-serif;
+  
+  --shadow-glass-glow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --shadow-accent-glow: 0 0 20px 2px rgba(79, 140, 255, 0.25);
+}
+
+@layer base {
+  body {
+    @apply bg-bgDeep text-slate-200 font-sans antialiased overflow-x-hidden transition-colors duration-300;
+  }
+}
+
+/* Custom styles for modern, premium look */
+
+/* Glassmorphism custom classes */
+.glass-panel {
+  background: rgba(18, 24, 38, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card-light {
+  background: rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.text-glow {
+  text-shadow: 0 0 12px rgba(79, 140, 255, 0.5);
+}
+
+.text-glow-success {
+  text-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(11, 15, 25, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(79, 140, 255, 0.25);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 140, 255, 0.5);
+}
+
+/* Custom animated background gradient */
+.animated-bg {
+  background: linear-gradient(-45deg, #0b0f19, #121826, #1b2233, #091c3f);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
