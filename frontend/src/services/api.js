@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:5050/api',
+  baseURL: 'https://gossips-bn3l.onrender.com/api',
   withCredentials: true, // Crucial for Flask session cookies
   headers: {
     'Content-Type': 'application/json',
