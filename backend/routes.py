@@ -110,9 +110,12 @@ def login():
     db.session.commit()
 
     # Set user session
+    session.clear()                         # wipe any stale data first
     session['user_id'] = user.id
     session['username'] = user.username
-    session['authorized_rooms'] = []  # Clear previous room auths on login
+    session['authorized_rooms'] = []
+    session.modified = True                 # force Flask to issue Set-Cookie
+    session.permanent = True                # honour PERMANENT_SESSION_LIFETIME
 
     return jsonify({
         'message': 'Login successful.',

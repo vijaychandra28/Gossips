@@ -1,76 +1,65 @@
 import os
-import pymysql
 from flask import Flask, jsonify
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 from database import db
 from routes import api
 
-# Auto-create MySQL database if it doesn't exist yet
-def init_database_schema():
-    if Config.IS_SQLITE:
-        print("[*] Using local SQLite database file. Auto-creation skipped.")
-        return
-        
-    try:
-        # Establish connection without a specific database
-        connection = pymysql.connect(
-            host=Config.DB_HOST,
-            user=Config.DB_USER,
-            password=Config.DB_PASSWORD,
-            port=int(Config.DB_PORT)
-        )
-        with connection.cursor() as cursor:
-            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {Config.DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
-        connection.commit()
-        connection.close()
-        print(f"[*] MySQL database '{Config.DB_NAME}' verified/created.")
-    except Exception as e:
-        print(f"[!] Warning: Could not auto-create MySQL database '{Config.DB_NAME}'. Details: {e}")
-        print("[!] Ensure MySQL is running and your DB credentials in config.py are correct.")
 
 def create_app():
-    # Attempt to create schema if MySQL is active
-    init_database_schema()
-
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Enable CORS. Vite dev server runs on http://localhost:5173 by default.
-    # We allow credentials so session cookies can be sent back/forth.
-    CORS(app, supports_credentials=True, origins=[
-        "http://localhost:5173", "http://127.0.0.1:5173",
-        "http://localhost:5174", "http://127.0.0.1:5174",
-        "http://localhost:5175", "http://127.0.0.1:5175",
-        "https://gossipshub.vercel.app","https://gossipshub.vercel.app"
-    ])
+    # ── ProxyFix ───────────────────────────────────────────────────────────────
+    # Render (and most PaaS hosts) terminate TLS at a load balancer and forward
+    # plain HTTP to the container.  Without ProxyFix, Flask sees http:// and
+    # silently drops Set-Cookie headers that have the Secure flag, so the
+    # session cookie NEVER reaches the browser even though login returns 200.
+    # x_for=1, x_proto=1 trusts exactly one hop of Render's proxy headers.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
-    # Ensure upload directory exists
+    # ── CORS ───────────────────────────────────────────────────────────────────
+    # supports_credentials=True is required so the browser sends the session
+    # cookie on cross-origin requests (Vercel frontend → Render backend).
+    CORS(app,
+         supports_credentials=True,
+         origins=[
+             "http://localhost:5173",
+             "http://127.0.0.1:5173",
+             "http://localhost:5174",
+             "http://127.0.0.1:5174",
+             "http://localhost:5175",
+             "http://127.0.0.1:5175",
+             "https://gossipshub.vercel.app",
+         ])
+
+    # ── Upload directory ───────────────────────────────────────────────────────
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    # Initialize SQLAlchemy database
+    # ── Database ───────────────────────────────────────────────────────────────
     db.init_app(app)
 
-    # Register API blueprint
+    # ── Blueprints ─────────────────────────────────────────────────────────────
     app.register_blueprint(api, url_prefix='/api')
 
-    # Global error handlers
+    # ── Error handlers ─────────────────────────────────────────────────────────
     @app.errorhandler(413)
     def file_too_large(e):
         return jsonify({'error': 'File is too large. Maximum size allowed is 500MB.'}), 413
 
-    # Create tables
+    # ── Create DB tables ───────────────────────────────────────────────────────
     with app.app_context():
         try:
             db.create_all()
-            print("[*] Database tables created successfully.")
+            print("[*] Database tables verified/created.")
         except Exception as e:
-            print(f"[!] Error: Could not create tables in database: {e}")
+            print(f"[!] Error creating tables: {e}")
 
     return app
+
 
 app = create_app()
 
 if __name__ == '__main__':
-    # Run server locally on port 5050
     app.run(host='0.0.0.0', port=5050, debug=True)
